@@ -21,7 +21,6 @@ add_cache = []
 # invokes an API call to Rdio, sent from client on payload
 def rdio(payload):
 	req = client.request('http://api.rdio.com/1/', 'POST', urllib.urlencode(payload))
-	print req
 	return req
 
 # helper method to send an SMS via Twilio
@@ -48,12 +47,9 @@ def poll():
 # we need the currently playing song
 def queue_song(person, query):
 	# search Rdio for song
-	print 'About to search on query ' + query
 	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
 	song = json.loads(song_result[1])['result']['results'][0]
-	print song
 	add_cache.append(song['key'])
-	print add_cache
 
 	# text user confirmation
 	send_text(person, song['name'] + ' is queued, thank you!')
