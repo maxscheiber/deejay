@@ -68,7 +68,7 @@ def pay():
 		songkey = pending[payment]['songkey']
 		songname = pending[payment]['songname']
 		frontend['juke'].trigger('queue', {'song':songkey})
-		send_text(person, songname + ' is queued, thank you!')
+		send_text(person, songname + ' by ' + songartist + ' is queued, thank you!')
 		del pending[payment] # payment is settled
 	elif status == 'cancelled':
 		del pending[payment]
@@ -101,13 +101,17 @@ def queue_song(person, query):
 		if payment == -1: # Venmo account owner tried to queue a song as a non-admin. Edge case
 			frontend['juke'].trigger('queue', {'song':song['key']})
 			# text user confirmation
-			send_text(person, song['name'] + ' is queued, thank you!')
+			send_text(person, song['name'] + ' by ' + song['artist'] + ' is queued, thank you!')
 			return
-		pending[payment] = {'songkey' : song['key'], 'songname': song['name'], 'person' : person}
+		pending[payment] = { 'songkey' : song['key'], 
+												 'songname': song['name'], 
+												 'songartist': song['artist'], 
+												 'person' : person
+											 }
 	else:
 		frontend['juke'].trigger('queue', {'song':song['key']})
 		# text user confirmation
-		send_text(person, song['name'] + ' is queued, thank you!')
+		send_text(person, song['name'] + ' by ' + song['artist'] + ' is queued, thank you!')
 
 def charge_for_song(person, song_name):
 	data = {
