@@ -47,8 +47,13 @@
 					success: function(data) {
 						data = JSON.parse(data);
 						console.log(data);
-						for (var i = 0; i < data.length; i++) {
-							$('#api').rdio().queue(data[i]);
+						var songs = data.add;
+						var skip = data.skip;
+						for (var i = 0; i < songs.length; i++) {
+							$('#api').rdio().queue(songs[i]);
+						}
+						if (skip) {
+							$('#api').rdio().next(true);
 						}
 					}
 				})}, 1000);

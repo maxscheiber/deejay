@@ -13,6 +13,7 @@ import urllib
 app = Flask(__name__)
 heroku = Heroku(app)
 add_cache = []
+skip = False
 
 ####################
 # HELPER FUNCTIONS #
@@ -37,12 +38,13 @@ def home():
 
 @app.route('/poll', methods=['GET'])
 def poll():
-	tmp = []
+	global skip
+	res = {'add': [], 'skip': skip}
 	for x in add_cache:
-		tmp.append(x)
+		res['add'].append(x)
 	add_cache[:] = []
-	return json.dumps(tmp)
-	#return tmp # will this automatically get jsonified
+	skip = False
+	return json.dumps(res)
 
 # we need the currently playing song
 def queue_song(person, query):
@@ -59,9 +61,13 @@ def queue_song(person, query):
 def twilio():
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
+	global skip
+	if msg.lower() == 'skip':
+		skip = True
+	else:
+		# right now, assuming all messages are the song name to play
+		queue_song(from_, msg)
 
-	# right now, assuming all messages are the song name to play
-	queue_song(from_, msg)
 	resp = jsonify({})
 	resp.status_code = 200
 	return resp
