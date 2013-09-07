@@ -82,7 +82,8 @@ def validate():
 if __name__ == '__main__':
 	twilio = TwilioRestClient(os.environ['TWILIO_KEY'], os.environ['TWILIO_SECRET'])
 	client = validate()
-	playback_token = json.loads(rdio({'method':'getPlaybackToken', 'domain':'localhost'})[1])['result']
+	playback_token = json.loads(rdio({'method':'getPlaybackToken', 'domain':'deejay-pennapps.herokuapp.com'})[1])['result']
+	print playback_token
 	# create playlist if it does not already exist
 	app.run(use_reloader=False)
 
