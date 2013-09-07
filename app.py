@@ -20,7 +20,9 @@ add_cache = []
 
 # invokes an API call to Rdio, sent from client on payload
 def rdio(payload):
-	return client.request('http://api.rdio.com/1/', 'POST', urllib.urlencode(payload))
+	req = client.request('http://api.rdio.com/1/', 'POST', urllib.urlencode(payload))
+	print req
+	return req
 
 # helper method to send an SMS via Twilio
 def send_text(to, body):
