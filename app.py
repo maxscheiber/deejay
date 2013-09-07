@@ -21,6 +21,7 @@ import config
 
 # Flask overhead
 app = Flask(__name__)
+deejay = None
 #heroku = Heroku(app)
 
 ####################
@@ -62,6 +63,7 @@ class Deejay(SpotifySessionManager):
 		else:
 			print 'logged in'
 		self.session = session
+		app.run(use_reloader=False, debug=True)
 
 ####################
 # USELESS OVERHEAD #
@@ -69,24 +71,11 @@ class Deejay(SpotifySessionManager):
 
 # TODO: make use of api
 def login():
-	import optparse
-	op = optparse.OptionParser(version="%prog 0.1")
-	op.add_option("-u", "--username", help="Spotify username")
-	op.add_option("-p", "--password", help="Spotify password")
-	op.add_option(
-		"-v", "--verbose", help="Show debug information",
-		dest="verbose", action="store_true")
-	(options, args) = op.parse_args()
-	if options.verbose:
-		logging.basicConfig(level=logging.DEBUG)
-	deejay = Deejay(options.username, options.password, True)
+	deejay = Deejay("agoel", "ilikebuttsex", True)
 	deejay.connect()
-
-	print deejay.session.display_name()
-	return deejay
 
 # Flask overhead
 if __name__ == '__main__':
 	twilio = TwilioRestClient(config.TWILIO_KEY, config.TWILIO_SECRET)
-	deejay = login()
-	app.run(use_reloader=False, debug=True)
+	login()
+	print deejay.session.display_name()
