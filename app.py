@@ -87,9 +87,21 @@ def twilio():
 	msg = request.values.get('Body', None)
 	if msg.lower() == 'skip' and is_admin(from_):
 		skip()
+	elif msg.lower() == 'current':
+		frontend['juke'].trigger('current', {'person':from_})
 	else:
 		queue_song(from_, msg)
 
+	resp = jsonify({})
+	resp.status_code = 200
+	return resp
+
+@app.route('/current', methods=['POST'])
+def current():
+	person = request.values.get('person', None)
+	song = request.values.get('song', None)
+	artist = request.values.get('artist', None)
+	send_text(person, 'Now playing: ' + song + ' by ' + artist)
 	resp = jsonify({})
 	resp.status_code = 200
 	return resp
