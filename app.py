@@ -48,12 +48,10 @@ def home():
 
 @app.route('/pay', methods=['POST'])
 def pay():
-	data = request.data['data']
+	data = request.data.data
 	print data
-	payment = data['id']
-	status = data['status']
-	print payment
-	print status
+	payment = data.id
+	status = data.status
 	if status == 'settled':
 		print 'Payment ' + payment + 'settled'
 		print 'Pending ' + pending[payment]
