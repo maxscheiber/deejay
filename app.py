@@ -55,9 +55,10 @@ def pay():
 		print 'Payment ' + payment + 'settled'
 		print 'Pending ' + pending[payment]
 		person = pending[payment]['person']
-		song = pending[payment]['song']
-		frontend['juke'].trigger('queue', {'song':song['key']})
-		send_text(person, song['name'] + ' is queued, thank you!')
+		songkey = pending[payment]['songkey']
+		songname = pending[payment]['songname']
+		frontend['juke'].trigger('queue', {'song':songkey})
+		send_text(person, songname + ' is queued, thank you!')
 		del pending[payment] # payment is settled
 	elif status == 'cancelled':
 		del pending[payment]
@@ -87,7 +88,7 @@ def queue_song(person, query):
 	song = json.loads(song_result[1])['result']['results'][0]
 	if not is_admin(person):
 		payment = charge_for_song(person, song['name'])
-		pending[payment] = {'song' : song, 'person' : person}
+		pending[payment] = {'songkey' : song['key'], 'songname': song['name'], 'person' : person}
 		print "CHARGING: " + pending[payment]
 	else:
 		frontend['juke'].trigger('queue', {'song':song['key']})
