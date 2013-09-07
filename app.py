@@ -119,7 +119,7 @@ def charge_for_song(person, song_name):
         "access_token":venmo_token,
         "phone":person,
         "note":"for playing " + song_name + " on Juke",
-        "amount":-1
+        "amount":-0.01
     }
 	url = "https://api.venmo.com/payments"
 	response = requests.post(url, data)
