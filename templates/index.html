@@ -13,13 +13,14 @@
 	<script type="text/javascript">
 		var duration = 1; // track the duration of the currently playing track
 		var cur; // current song playing
-		var next // next song up
+		var next; // next song up
 		$(document).ready(function() {
 			$('#api').bind('ready.rdio', function() {
 				$(this).rdio().play('t6323548');
 			});
 			$('#api').bind('playingTrackChanged.rdio', function(e, playingTrack, sourcePosition) {
 				if (playingTrack) {
+					cur = playingTrack;
 					duration = playingTrack.duration;
 					$('#art').attr('src', playingTrack.icon);
 					$('#track').text(playingTrack.name);
@@ -41,7 +42,8 @@
 			});
 			// this is a valid playback token for localhost.
 			// but you should go get your own for your own domain.
-			$('#api').rdio('GB1SKtBj_____zNjbnZtZ2o5MjZ3c3g4bmp2MnE2aDlmcWRlZWpheS1wZW5uYXBwcy5oZXJva3VhcHAuY29tUp0ql2TqI3en0OafMcFRag==');
+			/*$('#api').rdio('GB1SKtBj_____zNjbnZtZ2o5MjZ3c3g4bmp2MnE2aDlmcWRlZWpheS1wZW5uYXBwcy5oZXJva3VhcHAuY29tUp0ql2TqI3en0OafMcFRag==');*/
+			$('#api').rdio('GAlNi78J_____zlyYWs5ZG02N2pkaHlhcWsyOWJtYjkyN2xvY2FsaG9zdEbwl7EHvbylWSWFWYMZwfc=');
 
 			$('#previous').click(function() { $('#api').rdio().previous(); });
 			$('#play').click(function() { $('#api').rdio().play(); });
@@ -80,12 +82,15 @@
 		    	}
 		    })
 
-		    // cache current track
-		    $('#api').bind('playingTrackChanged.rdio', function (e, song, pos) {
-		    	if (song) {
-		    		cur = song;
-		    	}
-		    });
+		    // pause music
+		    channel.bind('pause', function() {
+		    	$('#pause').trigger('click');
+		    })
+
+		    // play music
+		    channel.bind('play', function() {
+		    	$('#play').trigger('click');
+		    })
 
 		    // cache next track
 		    $('#api').bind('queueChanged.rdio', function (e, q) {

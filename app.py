@@ -87,6 +87,10 @@ def twilio():
 	msg = request.values.get('Body', None)
 	if msg.lower() == 'skip' and is_admin(from_):
 		skip()
+	elif msg.lower() == 'pause' and is_admin(from_):
+		frontend['juke'].trigger('pause')
+	elif msg.lower() == 'play' and is_admin(from_):
+		frontend['juke'].trigger('play')
 	elif msg.lower() == 'current':
 		frontend['juke'].trigger('current', {'person':from_})
 	elif msg.lower() == 'next':
