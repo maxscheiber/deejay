@@ -1,6 +1,6 @@
 # flask imports
 from flask import Flask, request, redirect, url_for, flash, render_template, json, jsonify, g
-#from flask_heroku import Heroku
+from flask_heroku import Heroku
 
 # Python library imports
 import oauth2 as oauth
@@ -11,7 +11,7 @@ import urllib
 
 # Flask overhead
 app = Flask(__name__)
-#heroku = Heroku(app)
+heroku = Heroku(app)
 add_cache = []
 
 ####################
