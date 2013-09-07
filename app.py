@@ -7,6 +7,7 @@ import datetime
 import oauth2 as oauth
 import os
 import pusher
+import re
 import requests
 import time
 from twilio.rest import TwilioRestClient
@@ -128,7 +129,13 @@ def next():
 # we need the currently playing song
 def queue_song(person, query):
 	# search Rdio for song
-	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
+	p = re.compile(r'\s+by\s+', re.IGNORECASE)
+	m = p.search(query)
+	stripped_query = query
+	if m:
+		stripped_query = query[:m.start()] + ' ' + query[m.end():]
+	print stripped_query
+	song_result = rdio({'method':'search', 'query':stripped_query, 'types':'Track', 'count':1})
 	song = json.loads(song_result[1])['result']['results'][0]
 	if not is_admin(person):
 		payment = charge_for_song(person, song['name'])
