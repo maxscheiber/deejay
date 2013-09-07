@@ -32,7 +32,7 @@ def send_text(to, body):
 
 @app.route('/', methods=['GET'])
 def home():
-	return render_template('index.html', playback_token=playback_token)
+	return render_template('index.html')
 
 @app.route('/poll', methods=['GET'])
 def poll():
@@ -84,5 +84,5 @@ if __name__ == '__main__':
 	client = validate()
 	playback_token = json.loads(rdio({'method':'getPlaybackToken', 'domain':'localhost'})[1])['result']
 	# create playlist if it does not already exist
-	app.run(use_reloader=False, debug=True)
+	app.run(use_reloader=False)
 
