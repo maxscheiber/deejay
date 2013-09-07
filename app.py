@@ -46,8 +46,10 @@ def poll():
 # we need the currently playing song
 def queue_song(person, query):
 	# search Rdio for song
+	print 'About to search on query ' + query
 	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
 	song = json.loads(song_result[1])['result']['results'][0]
+	print song
 	add_cache.append(song['key'])
 	print add_cache
 
@@ -57,7 +59,6 @@ def queue_song(person, query):
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
 def twilio():
-	print request.values
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
 
