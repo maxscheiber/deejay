@@ -48,8 +48,8 @@ def home():
 
 @app.route('/pay', methods=['POST'])
 def pay():
-	print dir(request)
 	print request.data
+	print type(request.data)
 	print jsonify(request.data)
 	data = jsonify(request.data)['data']
 	print data
