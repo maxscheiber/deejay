@@ -32,6 +32,9 @@ def rdio(payload):
 def send_text(to, body):
 	twilio.sms.messages.create(to=to, from_=os.environ['TWILIO_NUMBER'], body=body)
 
+def is_admin(person):
+	return from_[1:] == os.environ['TWILIO_ADMIN'][1:]
+
 #################
 # SERVER ROUTES #
 #################
@@ -47,7 +50,8 @@ def queue_song(person, query):
 	song = json.loads(song_result[1])['result']['results'][0]
 	frontend['juke'].trigger('queue', {'song':song['key']})
 
-	charge_for_song(person, song['name'])
+	if not is_admin(person):
+		charge_for_song(person, song['name'])
 
 	# text user confirmation
 	send_text(person, song['name'] + ' is queued, thank you!')
@@ -70,7 +74,7 @@ def skip():
 def twilio():
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
-	if msg.lower() == 'skip' and from_[1:] == os.environ['TWILIO_ADMIN'][1:]:
+	if msg.lower() == 'skip' and is_admin(from_):
 		skip()
 	else:
 		# right now, assuming all messages are the song name to play
