@@ -57,6 +57,7 @@ def queue_song(person, query):
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
 def twilio():
+	print request.values
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
 
