@@ -33,7 +33,7 @@ def send_text(to, body):
 	twilio.sms.messages.create(to=to, from_=os.environ['TWILIO_NUMBER'], body=body)
 
 def is_admin(person):
-	return from_[1:] == os.environ['TWILIO_ADMIN'][1:]
+	return person[1:] == os.environ['TWILIO_ADMIN'][1:]
 
 #################
 # SERVER ROUTES #
