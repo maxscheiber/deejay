@@ -42,7 +42,7 @@
 
 			setInterval(function() {
 				$.ajax({
-					url:'http://localhost:5000/poll',
+					url:'/poll',
 					async: false,
 					success: function(data) {
 						data = JSON.parse(data);
