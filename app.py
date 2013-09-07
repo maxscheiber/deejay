@@ -1,5 +1,5 @@
 # flask imports
-from flask import Flask, request, redirect, url_for, flash, render_template, json, jsonify, g
+from flask import Flask, request, redirect, url_for, flash, render_template, json, jsonify
 from flask_heroku import Heroku
 
 # Python library imports
@@ -18,6 +18,9 @@ heroku = Heroku(app)
 # Pusher overhead
 frontend = pusher.Pusher(app_id=os.environ['PUSHER_ID'],
 	key=os.environ['PUSHER_KEY'], secret=os.environ['PUSHER_SECRET'])
+
+# global vars
+pending = {}
 
 ####################
 # HELPER FUNCTIONS #
@@ -43,18 +46,43 @@ def is_admin(person):
 def home():
 	return render_template('index.html')
 
+@app.route('/pay', methods=['POST'])
+def pay():
+	print request.values
+	payment = request.values.get('id')
+	status = request.values.get('status')
+	if status == 'settled':
+		frontend['juke'].trigger('queue', {'song':pending[payment]})
+		del pending[payment] # payment is settled
+
+# parses all possible Twilio responses and delegates as necessary
+@app.route('/twilio', methods=['POST'])
+def twilio():
+	from_ = request.values.get('From', None)
+	msg = request.values.get('Body', None)
+	if msg.lower() == 'skip' and is_admin(from_):
+		skip()
+	else:
+		queue_song(from_, msg)
+
+	resp = jsonify({})
+	resp.status_code = 200
+	return resp
+
 # we need the currently playing song
 def queue_song(person, query):
 	# search Rdio for song
 	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
 	song = json.loads(song_result[1])['result']['results'][0]
-	frontend['juke'].trigger('queue', {'song':song['key']})
-
 	if not is_admin(person):
-		charge_for_song(person, song['name'])
-
-	# text user confirmation
-	send_text(person, song['name'] + ' is queued, thank you!')
+		payment = charge_for_song(person, song['name'])
+		pending[payment] = song['key']
+		print payment
+		print pending[payment]
+	else:
+		frontend['juke'].trigger('queue', {'song':song['key']})
+		# text user confirmation
+		send_text(person, song['name'] + ' is queued, thank you!')
 
 def charge_for_song(person, song_name):
 	data = {
@@ -65,27 +93,11 @@ def charge_for_song(person, song_name):
     }
 	url = "https://api.venmo.com/payments"
 	response = requests.post(url, data)
+	response_dict = response.json()
+	return response_dict['id'] # store this in pending
 
 def skip():
 	frontend['juke'].trigger('skip')
-
-# parses all possible Twilio responses and delegates as necessary
-@app.route('/twilio', methods=['POST'])
-def twilio():
-	from_ = request.values.get('From', None)
-	msg = request.values.get('Body', None)
-	if msg.lower() == 'skip' and is_admin(from_):
-		skip()
-	else:
-		# right now, assuming all messages are the song name to play
-		queue_song(from_, msg)
-		# JUST FOR DEMO PURPOSES, AUTOMATICALLY SKIP
-		#skip()
-		# DON'T FORGET TO REMOVE THIS!!!!!!!!
-
-	resp = jsonify({})
-	resp.status_code = 200
-	return resp
 
 ####################
 # USELESS OVERHEAD #
@@ -107,9 +119,7 @@ def venmo():
         }
 	url = "https://api.venmo.com/oauth/access_token"
 	response = requests.post(url, data)
-	#print response.json()
 	response_dict = response.json()
-	#response_dict = json.loads(response)
 	print response_dict
 	return response_dict.get('access_token')
 
