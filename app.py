@@ -4,12 +4,10 @@ from flask import Flask, request, redirect, url_for, flash, render_template, jso
 
 # Python library imports
 import oauth2 as oauth
+import os
 from twilio.rest import TwilioRestClient
 import twilio.twiml
 import urllib
-
-# local imports
-import config
 
 # Flask overhead
 app = Flask(__name__)
@@ -26,7 +24,7 @@ def rdio(payload):
 
 # helper method to send an SMS via Twilio
 def send_text(to, body):
-	twilio.sms.messages.create(to=to, from_=config.TWILIO_NUMBER, body=body)
+	twilio.sms.messages.create(to=to, from_=os.environ['TWILIO_NUMBER'], body=body)
 
 #################
 # SERVER ROUTES #
@@ -75,14 +73,14 @@ def twilio():
 # source: http://developer.rdio.com/docs/rest/oauth
 def validate():
 	# create the OAuth consumer credentials
-	consumer = oauth.Consumer(config.RDIO_KEY, config.RDIO_SECRET)
+	consumer = oauth.Consumer(os.environ['RDIO_KEY'], os.environ['RDIO_SECRET'])
 	# make the initial request for the request token
 	client = oauth.Client(consumer)
 	return client
 
 # Flask overhead
 if __name__ == '__main__':
-	twilio = TwilioRestClient(config.TWILIO_KEY, config.TWILIO_SECRET)
+	twilio = TwilioRestClient(os.environ['TWILIO_KEY'], os.environ['TWILIO_SECRET'])
 	client = validate()
 	playback_token = json.loads(rdio({'method':'getPlaybackToken', 'domain':'localhost'})[1])['result']
 	# create playlist if it does not already exist
