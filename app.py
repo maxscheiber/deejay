@@ -89,6 +89,8 @@ def twilio():
 		skip()
 	elif msg.lower() == 'current':
 		frontend['juke'].trigger('current', {'person':from_})
+	elif msg.lower() == 'next':
+		frontend['juke'].trigger('next', {'person':from_})
 	else:
 		queue_song(from_, msg)
 
@@ -105,6 +107,19 @@ def current():
 	resp = jsonify({})
 	resp.status_code = 200
 	return resp
+
+@app.route('/next', methods=['POST'])
+def next():
+	person = request.values.get('person', None)
+	song = request.values.get('song', None)
+	artist = request.values.get('artist', None)
+	if not song or not artist:
+		send_text(person, 'No songs are currently queued.')
+	else:
+		send_text(person, 'Next up: ' + song + ' by ' + artist)
+	resp = jsonify({})
+	resp.status_code = 200
+	return resp	
 
 # we need the currently playing song
 def queue_song(person, query):

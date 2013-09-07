@@ -13,6 +13,7 @@
 	<script type="text/javascript">
 		var duration = 1; // track the duration of the currently playing track
 		var cur; // current song playing
+		var next // next song up
 		$(document).ready(function() {
 			$('#api').bind('ready.rdio', function() {
 				$(this).rdio().play('t6323548');
@@ -69,12 +70,31 @@
 		    	$.post('/current', {'song':cur.name, 'artist':cur.artist, 'person':data.person});
 		    })
 
+		    // get next track
+		    channel.bind('next', function(data) {
+		    	if (next) {
+		    		$.post('/next', {'song':next.name, 'artist':next.artist, 
+		    			'person':data.person});
+		    	} else {
+		    		$.post('/next', {'person':data.person}); // represents no song being present
+		    	}
+		    })
+
 		    // cache current track
 		    $('#api').bind('playingTrackChanged.rdio', function (e, song, pos) {
 		    	if (song) {
 		    		cur = song;
 		    	}
 		    });
+
+		    // cache next track
+		    $('#api').bind('queueChanged.rdio', function (e, q) {
+		    	if (q) {
+		    		next = q[0];
+		    	} else {
+		    		next = null;
+		    	}
+		    })
 		});
 	</script>
 </head>
