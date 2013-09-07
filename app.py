@@ -57,7 +57,10 @@ class Deejay(SpotifySessionManager):
 		print "Logging in, please wait..."
 
 	def logged_in(self, session, error):
-		print 'logged in'
+		if error:
+			print error
+		else:
+			print 'logged in'
 		self.session = session
 
 ####################
@@ -78,7 +81,8 @@ def login():
 		logging.basicConfig(level=logging.DEBUG)
 	deejay = Deejay(options.username, options.password, True)
 	deejay.connect()
-	deejay.session.play(0)
+
+	print deejay.session.display_name()
 	return deejay
 
 # Flask overhead
