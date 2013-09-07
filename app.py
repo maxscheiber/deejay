@@ -49,11 +49,17 @@ def home():
 @app.route('/pay', methods=['POST'])
 def pay():
 	print request.values
-	payment = request.values.get('id')
-	status = request.values.get('status')
+	data = request.values.get('data')
+	payment = data['id']
+	status = data['status']
 	if status == 'settled':
 		frontend['juke'].trigger('queue', {'song':pending[payment]})
 		del pending[payment] # payment is settled
+	elif status == 'cancelled':
+		del pending[payment]
+	resp = jsonify({})
+	resp.status_code = 200
+	return resp
 
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
