@@ -49,7 +49,6 @@ def home():
 @app.route('/pay', methods=['POST'])
 def pay():
 	print request.data
-	print jsonify(request.data)
 	data = json.loads(request.data)['data']
 	print data
 	payment = data['id']
