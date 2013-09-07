@@ -56,7 +56,7 @@ def queue_song(person, query):
 	print add_cache
 
 	# text user confirmation
-	#send_text(person, song['name'] + ' is queued, thank you!')
+	send_text(person, song['name'] + ' is queued, thank you!')
 
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
@@ -80,13 +80,13 @@ def validate():
 	# create the OAuth consumer credentials
 	consumer = oauth.Consumer(os.environ['RDIO_KEY'], os.environ['RDIO_SECRET'])
 	# make the initial request for the request token
-	client = oauth.Client(consumer)
-	return client
+	return oauth.Client(consumer)
+
+client = validate()
+twilio = TwilioRestClient(os.environ['TWILIO_KEY'], os.environ['TWILIO_SECRET'])
 
 # Flask overhead
 if __name__ == '__main__':
-	twilio = TwilioRestClient(os.environ['TWILIO_KEY'], os.environ['TWILIO_SECRET'])
-	client = validate()
 	playback_token = json.loads(rdio({'method':'getPlaybackToken', 'domain':'deejay-pennapps.herokuapp.com'})[1])['result']
 	print playback_token
 	# create playlist if it does not already exist
