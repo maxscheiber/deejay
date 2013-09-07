@@ -3,7 +3,6 @@ from flask import Flask, request, redirect, url_for, flash, render_template, jso
 #from flask_heroku import Heroku
 
 # Python library imports
-import cgi
 import oauth2 as oauth
 from twilio.rest import TwilioRestClient
 import twilio.twiml
@@ -56,7 +55,7 @@ def queue_song(person, query):
 	print add_cache
 
 	# text user confirmation
-	#send_text(person, 'Your song is queued, thank you!')
+	send_text(person, song['name'] + ' is queued, thank you!')
 
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
