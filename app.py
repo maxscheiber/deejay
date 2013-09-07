@@ -6,6 +6,7 @@ from flask_heroku import Heroku
 import oauth2 as oauth
 import os
 import pusher
+import requests
 from twilio.rest import TwilioRestClient
 import twilio.twiml
 import urllib
@@ -46,8 +47,20 @@ def queue_song(person, query):
 	song = json.loads(song_result[1])['result']['results'][0]
 	frontend['juke'].trigger('queue', {'song':song['key']})
 
+	charge_for_song(person, song['name'])
+
 	# text user confirmation
 	send_text(person, song['name'] + ' is queued, thank you!')
+
+def charge_for_song(person, song_name):
+	data = {
+        "access_token":venmo_token,
+        "phone":person,
+        "note":"for playing " + song_name + " on Juke",
+        "amount":-1
+    }
+	url = "https://api.venmo.com/payments"
+	response = requests.post(url, data)
 
 def skip():
 	frontend['juke'].trigger('skip')
@@ -63,8 +76,8 @@ def twilio():
 		# right now, assuming all messages are the song name to play
 		queue_song(from_, msg)
 		# JUST FOR DEMO PURPOSES, AUTOMATICALLY SKIP
-		skip()
-
+		#skip()
+		# DON'T FORGET TO REMOVE THIS!!!!!!!!
 
 	resp = jsonify({})
 	resp.status_code = 200
@@ -82,7 +95,22 @@ def validate():
 	# make the initial request for the request token
 	return oauth.Client(consumer)
 
+def venmo():
+	data = {
+        "client_id":os.environ['VENMO_KEY'],
+        "client_secret":os.environ['VENMO_SECRET'],
+        "code":os.environ['VENMO_CODE']
+        }
+	url = "https://api.venmo.com/oauth/access_token"
+	response = requests.post(url, data)
+	#print response.json()
+	response_dict = response.json()
+	#response_dict = json.loads(response)
+	print response_dict
+	return response_dict.get('access_token')
+
 client = validate()
+venmo_token = os.environ['VENMO_TOKEN'] #venmo()
 twilio = TwilioRestClient(os.environ['TWILIO_KEY'], os.environ['TWILIO_SECRET'])
 
 # Flask overhead
