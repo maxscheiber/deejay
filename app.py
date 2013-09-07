@@ -1,5 +1,6 @@
 # flask imports
 from flask import Flask, request, redirect, url_for, flash, render_template, json, jsonify
+from flask_heroku import Heroku
 
 # Python library imports
 import cgi
@@ -13,30 +14,50 @@ import config
 
 # Flask overhead
 app = Flask(__name__)
+heroku = Heroku(app)
 
 ####################
 # HELPER FUNCTIONS #
 ####################
 
 # invokes an API call to Rdio, sent from client on payload
-def api(client, payload):
+def rdio(client, payload):
 	return client.request('http://api.rdio.com/1/', 'POST', urllib.urlencode(payload))
+
+# helper method to send an SMS via Twilio
+def send_text(to, body):
+	twilio.sms.messages.create(to=to, from_=config.TWILIO_NUMBER, body=body)
 
 #################
 # SERVER ROUTES #
 #################
 
+# we need the currently playing song
+def queue_song(query, person, playlist):
+	# search Rdio for song
+	song_result = rdio(auth_client, {'method':'search', 'query':query, 'types':'Track', 'count':1})
+	song = json.loads(song_result[1])['result']['results'][0]
+	print song
+
+	# add the song
+	rdio(auth_client, {'method':'addToPlaylist', 'playlist':playlist, 'tracks':song['key']})
+
+	# text user confirmation
+	send_text(person, song['name'] + ' is queued, thank you!')
+
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
 def twilio():
-	return # NOTHING RIGHT NOW LOL
+	from_ = request.values.get('From', None)
+	msg = request.values.get('Body', None)
+
+	# right now, assuming all messages are the song name to play
+	queue_song(msg, from_, "p6014113")
+	return
 
 ####################
 # USELESS OVERHEAD #
 ####################
-
-def send_text(to, body):
-	twilio.sms.messages.create(to=to, from_=config.TWILIO_NUMBER, body=body)
 
 # TODO: make use of api
 # source: http://developer.rdio.com/docs/rest/oauth
@@ -57,14 +78,16 @@ def validate():
 	request_token.set_verifier(oauth_verifier)
 
 	# upgrade the request token to an access token
-	auth_client = oauth.Client(consumer, request_token)
+	client = oauth.Client(consumer, request_token)
 	response, content = client.request('http://api.rdio.com/oauth/access_token', 'POST')
 	parsed_content = dict(cgi.parse_qsl(content))
 	access_token = oauth.Token(parsed_content['oauth_token'], parsed_content['oauth_token_secret'])
-	user_client = oauth.Client(consumer, access_token)
+	auth_client = oauth.Client(consumer, access_token)
+	return auth_client
 
 # Flask overhead
 if __name__ == '__main__':
 	twilio = TwilioRestClient(config.TWILIO_KEY, config.TWILIO_SECRET)
-	validate()
-	app.run(use_reloader=False)
+	auth_client = validate()
+	# create playlist if it does not already exist
+	app.run(use_reloader=False, debug=True)
