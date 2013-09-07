@@ -3,10 +3,12 @@ from flask import Flask, request, redirect, url_for, flash, render_template, jso
 from flask_heroku import Heroku
 
 # Python library imports
+import datetime
 import oauth2 as oauth
 import os
 import pusher
 import requests
+import time
 from twilio.rest import TwilioRestClient
 import twilio.twiml
 import urllib
@@ -115,10 +117,12 @@ def queue_song(person, query):
 		send_text(person, song['name'] + ' by ' + song['artist'] + ' is queued, thank you!')
 
 def charge_for_song(person, song_name):
+	ts = time.time()
+	st = datetime.datetime.fromtimestamp(ts).strftime('%I:%M %p on %b %d, %Y')
 	data = {
         "access_token":venmo_token,
         "phone":person,
-        "note":"for playing " + song_name + " on Juke",
+        "note":"for playing " + song_name + " on Juke at " + st,
         "amount":-0.01
     }
 	url = "https://api.venmo.com/payments"
