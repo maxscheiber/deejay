@@ -44,7 +44,18 @@ def is_admin(person):
 
 @app.route('/', methods=['GET'])
 def home():
+	return render_template('admin.html')
+
+
+@app.route('/player', methods=['GET'])
+def player():
 	return render_template('index.html')
+
+@app.route('/', methods=['POST'])
+def admin_number():
+	number = request.form['number']
+	person[1:] = number[1:]
+	return redirect(url_for('player'))
 
 @app.route('/pay', methods=['POST'])
 def pay():
