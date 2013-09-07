@@ -51,10 +51,11 @@ def home():
 def player():
 	return render_template('index.html')
 
-@app.route('/', methods=['POST'])
+@app.route('/admin_number', methods=['POST'])
 def admin_number():
+	print 'here'
 	number = request.form['number']
-	person[1:] = number[1:]
+	os.environ['TWILIO_ADMIN'] = number
 	return redirect(url_for('player'))
 
 @app.route('/pay', methods=['POST'])
@@ -63,7 +64,6 @@ def pay():
 	payment = data['id']
 	status = data['status']
 	if status == 'settled':
-		print 'Payment ' + payment + 'settled'
 		person = pending[payment]['person']
 		songkey = pending[payment]['songkey']
 		songname = pending[payment]['songname']
@@ -98,8 +98,12 @@ def queue_song(person, query):
 	song = json.loads(song_result[1])['result']['results'][0]
 	if not is_admin(person):
 		payment = charge_for_song(person, song['name'])
+		if payment == -1: # Venmo account owner tried to queue a song as a non-admin. Edge case
+			frontend['juke'].trigger('queue', {'song':song['key']})
+			# text user confirmation
+			send_text(person, song['name'] + ' is queued, thank you!')
+			return
 		pending[payment] = {'songkey' : song['key'], 'songname': song['name'], 'person' : person}
-		print "CHARGING: " + pending[payment]['person']
 	else:
 		frontend['juke'].trigger('queue', {'song':song['key']})
 		# text user confirmation
@@ -115,6 +119,8 @@ def charge_for_song(person, song_name):
 	url = "https://api.venmo.com/payments"
 	response = requests.post(url, data)
 	response_dict = response.json()
+	if 'id' not in response_dict:
+		return -1
 	return response_dict['id'] # store this in pending
 
 def skip():
