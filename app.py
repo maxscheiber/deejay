@@ -21,7 +21,6 @@ import config
 
 # Flask overhead
 app = Flask(__name__)
-deejay = None
 #heroku = Heroku(app)
 
 ####################
@@ -42,6 +41,10 @@ def twilio():
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
 	return
+
+@app.route('/testName')
+def testName():
+	print deejay.session.display_name()
 
 ###########
 # SPOTIFY #
@@ -65,17 +68,18 @@ class Deejay(SpotifySessionManager):
 		self.session = session
 		app.run(use_reloader=False, debug=True)
 
+deejay = Deejay("agoel", "ilikebuttsex", True)
+
 ####################
 # USELESS OVERHEAD #
 ####################
 
 # TODO: make use of api
 def login():
-	deejay = Deejay("agoel", "ilikebuttsex", True)
 	deejay.connect()
 
 # Flask overhead
 if __name__ == '__main__':
 	twilio = TwilioRestClient(config.TWILIO_KEY, config.TWILIO_SECRET)
 	login()
-	print deejay.session.display_name()
+	
