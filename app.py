@@ -15,7 +15,7 @@ import config
 # Flask overhead
 app = Flask(__name__)
 #heroku = Heroku(app)
-#add_cache = []
+add_cache = []
 
 ####################
 # HELPER FUNCTIONS #
@@ -39,20 +39,24 @@ def home():
 
 @app.route('/poll', methods=['GET'])
 def poll():
-	#tmp = add_cache
-	#add_cache = []
-	return json.dumps(['t6323548'])
+	tmp = []
+	for x in add_cache:
+		tmp.append(x)
+	add_cache[:] = []
+	return json.dumps(tmp)
 	#return tmp # will this automatically get jsonified
 
 # we need the currently playing song
-def queue_song(query):
+def queue_song(person, query):
 	# search Rdio for song
-	song_result = rdio(auth_client, {'method':'search', 'query':query, 'types':'Track', 'count':1})
+	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
+	print query
 	song = json.loads(song_result[1])['result']['results'][0]
 	add_cache.append(song['key'])
+	print add_cache
 
 	# text user confirmation
-	send_text(person, 'Your song is queued, thank you!')
+	#send_text(person, 'Your song is queued, thank you!')
 
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
@@ -61,7 +65,7 @@ def twilio():
 	msg = request.values.get('Body', None)
 
 	# right now, assuming all messages are the song name to play
-	queue_song(msg)
+	queue_song(from_, msg)
 	return
 
 ####################
