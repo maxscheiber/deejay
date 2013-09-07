@@ -1,6 +1,7 @@
 Flask
 oauth2
 twilio
+flask-heroku
 Jinja2==2.6
 Werkzeug==0.8.3
 gunicorn==0.17.2
