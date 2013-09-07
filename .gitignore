@@ -3,3 +3,4 @@
 config.py
 tmp
 .DS_Store
+vars
