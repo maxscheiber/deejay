@@ -48,11 +48,13 @@ def home():
 
 @app.route('/pay', methods=['POST'])
 def pay():
-	print request.values
 	data = request.values.get('data')
+	print data
 	payment = data['id']
 	status = data['status']
 	if status == 'settled':
+		print 'Payment ' + payment + 'settled'
+		print 'Pending ' + pending[payment]
 		frontend['juke'].trigger('queue', {'song':pending[payment]})
 		del pending[payment] # payment is settled
 	elif status == 'cancelled':
