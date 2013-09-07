@@ -49,16 +49,22 @@ def queue_song(person, query):
 	# text user confirmation
 	send_text(person, song['name'] + ' is queued, thank you!')
 
+def skip():
+	frontend['juke'].trigger('skip')
+
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
 def twilio():
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
 	if msg.lower() == 'skip' and from_[1:] == os.environ['TWILIO_ADMIN'][1:]:
-		frontend['juke'].trigger('skip')
+		skip()
 	else:
 		# right now, assuming all messages are the song name to play
 		queue_song(from_, msg)
+		# JUST FOR DEMO PURPOSES, AUTOMATICALLY SKIP
+		skip()
+
 
 	resp = jsonify({})
 	resp.status_code = 200
