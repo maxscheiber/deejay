@@ -49,8 +49,11 @@ def home():
 @app.route('/pay', methods=['POST'])
 def pay():
 	data = request.data['data']
+	print data
 	payment = data['id']
 	status = data['status']
+	print payment
+	print status
 	if status == 'settled':
 		print 'Payment ' + payment + 'settled'
 		print 'Pending ' + pending[payment]
@@ -58,7 +61,7 @@ def pay():
 		del pending[payment] # payment is settled
 	elif status == 'cancelled':
 		del pending[payment]
-		
+
 	resp = jsonify({})
 	resp.status_code = 200
 	return resp
