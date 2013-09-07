@@ -1,1 +1,4 @@
-spotify_appkey.key
+*.key
+*.pyc
+config.py
+tmp
