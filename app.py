@@ -47,13 +47,12 @@ def poll():
 def queue_song(person, query):
 	# search Rdio for song
 	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
-	print query
 	song = json.loads(song_result[1])['result']['results'][0]
 	add_cache.append(song['key'])
 	print add_cache
 
 	# text user confirmation
-	send_text(person, song['name'] + ' is queued, thank you!')
+	#send_text(person, song['name'] + ' is queued, thank you!')
 
 # parses all possible Twilio responses and delegates as necessary
 @app.route('/twilio', methods=['POST'])
@@ -63,7 +62,9 @@ def twilio():
 
 	# right now, assuming all messages are the song name to play
 	queue_song(from_, msg)
-	return
+	resp = jsonify({})
+	resp.status_code = 200
+	return resp
 
 ####################
 # USELESS OVERHEAD #
@@ -85,5 +86,5 @@ if __name__ == '__main__':
 	playback_token = json.loads(rdio({'method':'getPlaybackToken', 'domain':'deejay-pennapps.herokuapp.com'})[1])['result']
 	print playback_token
 	# create playlist if it does not already exist
-	app.run(use_reloader=False)
+	app.run(use_reloader=False, debug=True)
 
