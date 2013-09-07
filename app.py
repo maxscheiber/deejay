@@ -48,9 +48,7 @@ def home():
 
 @app.route('/pay', methods=['POST'])
 def pay():
-	print request.data
 	data = json.loads(request.data)['data']
-	print data
 	payment = data['id']
 	status = data['status']
 	if status == 'settled':
@@ -89,9 +87,8 @@ def queue_song(person, query):
 	song = json.loads(song_result[1])['result']['results'][0]
 	if not is_admin(person):
 		payment = charge_for_song(person, song['name'])
-		pending[payment] = {}
-		pending[payment]['song'] = song
-		pending[payment]['person'] = person
+		pending[payment] = {'song' : song, 'person' : person}
+		print "CHARGING: " + pending[payment]
 	else:
 		frontend['juke'].trigger('queue', {'song':song['key']})
 		# text user confirmation
@@ -133,7 +130,6 @@ def venmo():
 	url = "https://api.venmo.com/oauth/access_token"
 	response = requests.post(url, data)
 	response_dict = response.json()
-	print response_dict
 	return response_dict.get('access_token')
 
 client = validate()
