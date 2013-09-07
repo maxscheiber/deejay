@@ -49,7 +49,8 @@ def home():
 @app.route('/pay', methods=['POST'])
 def pay():
 	data = request.values.get('data')
-	print data
+	print request.values.get('id')
+	print request.values.get('status')
 	payment = data['id']
 	status = data['status']
 	if status == 'settled':
@@ -85,8 +86,6 @@ def queue_song(person, query):
 	if not is_admin(person):
 		payment = charge_for_song(person, song['name'])
 		pending[payment] = song['key']
-		print payment
-		print pending[payment]
 	else:
 		frontend['juke'].trigger('queue', {'song':song['key']})
 		# text user confirmation
