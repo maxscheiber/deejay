@@ -42,9 +42,15 @@ def twilio():
 	msg = request.values.get('Body', None)
 	return
 
+def search_finished(results, data):
+	print results.tracks()
+	print len(results.tracks())
+	return
+
 @app.route('/testName')
 def testName():
 	print deejay.session.display_name()
+	deejay.session.search("Wagon Wheel", search_finished)
 
 ###########
 # SPOTIFY #
@@ -82,4 +88,3 @@ def login():
 if __name__ == '__main__':
 	twilio = TwilioRestClient(config.TWILIO_KEY, config.TWILIO_SECRET)
 	login()
-	
