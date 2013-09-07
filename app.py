@@ -48,9 +48,9 @@ def home():
 
 @app.route('/pay', methods=['POST'])
 def pay():
-	data = request.values.get('data')
-	print request.values.get('id')
-	print request.values.get('status')
+	data = request.data
+	print request
+	print request.data
 	payment = data['id']
 	status = data['status']
 	if status == 'settled':
