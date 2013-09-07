@@ -50,11 +50,11 @@ def home():
 def pay():
 	print dir(request)
 	print request.data
-	print request.data['data']
-	data = request.data.data
+	print jsonify(request.data)
+	data = jsonify(request.data)['data']
 	print data
-	payment = data.id
-	status = data.status
+	payment = data['id']
+	status = data['status']
 	if status == 'settled':
 		print 'Payment ' + payment + 'settled'
 		print 'Pending ' + pending[payment]
