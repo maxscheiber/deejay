@@ -48,6 +48,9 @@ def home():
 
 @app.route('/pay', methods=['POST'])
 def pay():
+	print dir(request)
+	print request.data
+	print request.data['data']
 	data = request.data.data
 	print data
 	payment = data.id
