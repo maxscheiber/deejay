@@ -67,6 +67,7 @@ def pay():
 		person = pending[payment]['person']
 		songkey = pending[payment]['songkey']
 		songname = pending[payment]['songname']
+		songartist = pending[payment]['songartist']
 		frontend['juke'].trigger('queue', {'song':songkey})
 		send_text(person, songname + ' by ' + songartist + ' is queued, thank you!')
 		del pending[payment] # payment is settled
