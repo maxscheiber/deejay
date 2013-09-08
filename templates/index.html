@@ -14,6 +14,16 @@
 		var duration = 1; // track the duration of the currently playing track
 		var cur; // current song playing
 		var next; // next song up
+
+		function componentToHex(c) {
+	    var hex = c.toString(16);
+	    return hex.length == 1 ? "0" + hex : hex;
+		}
+
+		function rgbToHex(r, g, b) {
+			return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+		}
+
 		$(document).ready(function() {
 			$('#api').bind('ready.rdio', function() {
 				$(this).rdio().play('t6323548');
