@@ -138,7 +138,7 @@ def queue_song(person, query):
 	song_result = rdio({'method':'search', 'query':stripped_query, 'types':'Track', 'count':1})
 	song = json.loads(song_result[1])['result']['results'][0]
 	if not is_admin(person):
-		payment = charge_for_song(person, song['name'])
+		payment = charge_for_song(person, song['name'], song['artist'])
 		if payment == -1: # Venmo account owner tried to queue a song as a non-admin. Edge case
 			frontend['juke'].trigger('queue', {'song':song['key']})
 			# text user confirmation
@@ -154,13 +154,13 @@ def queue_song(person, query):
 		# text user confirmation
 		send_text(person, song['name'] + ' by ' + song['artist'] + ' is queued, thank you!')
 
-def charge_for_song(person, song_name):
+def charge_for_song(person, song_name, song_artist):
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%I:%M %p on %b %d, %Y')
 	data = {
         "access_token":venmo_token,
         "phone":person,
-        "note":"for playing " + song_name + " on Juke at " + st,
+        "note":"for playing " + song_name + " by " + song_artist + " on Juke at " + st,
         "amount":-0.01
     }
 	url = "https://api.venmo.com/payments"
