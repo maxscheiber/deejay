@@ -86,6 +86,7 @@ def pay():
 def twilio():
 	from_ = request.values.get('From', None)
 	msg = request.values.get('Body', None)
+	msg = msg.strip()
 	if msg.lower() == 'skip' and is_admin(from_):
 		skip()
 	elif msg.lower() == 'pause' and is_admin(from_):
@@ -134,9 +135,6 @@ def queue_song(person, query):
 	stripped_query = query
 	if m:
 		stripped_query = query[:m.start()] + ' ' + query[m.end():]
-	print stripped_query
-	stripped_query = stripped_query.strip()
-	print stripped_query
 	song_result = rdio({'method':'search', 'query':stripped_query, 'types':'Track', 'count':1})
 	song = json.loads(song_result[1])['result']['results'][0]
 	if not is_admin(person):
