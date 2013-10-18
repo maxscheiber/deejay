@@ -41,90 +41,15 @@ def send_text(to, body):
 def is_admin(person):
 	return person[1:] == os.environ['TWILIO_ADMIN'][1:]
 
+# returns a blank response to an API call
+def blank_resp():
+	resp = jsonify({})
+	resp.status_code = 200
+	return resp
+
 #################
-# SERVER ROUTES #
+# API FUNCTIONS #
 #################
-
-@app.route('/', methods=['GET'])
-def home():
-	return render_template('admin.html')
-
-
-@app.route('/player', methods=['GET'])
-def player():
-	return render_template('index.html')
-
-@app.route('/admin_number', methods=['POST'])
-def admin_number():
-	print 'here'
-	number = request.form['number']
-	os.environ['TWILIO_ADMIN'] = number
-	return redirect(url_for('player'))
-
-@app.route('/pay', methods=['POST'])
-def pay():
-	data = json.loads(request.data)['data']
-	payment = data['id']
-	status = data['status']
-	if status == 'settled':
-		person = pending[payment]['person']
-		songkey = pending[payment]['songkey']
-		songname = pending[payment]['songname']
-		songartist = pending[payment]['songartist']
-		frontend['juke'].trigger('queue', {'song':songkey})
-		send_text(person, songname + ' by ' + songartist + ' is queued, thank you!')
-		del pending[payment] # payment is settled
-	elif status == 'cancelled':
-		del pending[payment]
-
-	resp = jsonify({})
-	resp.status_code = 200
-	return resp
-
-# parses all possible Twilio responses and delegates as necessary
-@app.route('/twilio', methods=['POST'])
-def twilio():
-	from_ = request.values.get('From', None)
-	msg = request.values.get('Body', None)
-	if msg.lower() == 'skip' and is_admin(from_):
-		skip()
-	elif msg.lower() == 'pause' and is_admin(from_):
-		frontend['juke'].trigger('pause')
-	elif msg.lower() == 'play' and is_admin(from_):
-		frontend['juke'].trigger('play')
-	elif msg.lower() == 'current':
-		frontend['juke'].trigger('current', {'person':from_})
-	elif msg.lower() == 'next':
-		frontend['juke'].trigger('next', {'person':from_})
-	else:
-		queue_song(from_, msg)
-
-	resp = jsonify({})
-	resp.status_code = 200
-	return resp
-
-@app.route('/current', methods=['POST'])
-def current():
-	person = request.values.get('person', None)
-	song = request.values.get('song', None)
-	artist = request.values.get('artist', None)
-	send_text(person, 'Now playing: ' + song + ' by ' + artist)
-	resp = jsonify({})
-	resp.status_code = 200
-	return resp
-
-@app.route('/next', methods=['POST'])
-def next():
-	person = request.values.get('person', None)
-	song = request.values.get('song', None)
-	artist = request.values.get('artist', None)
-	if not song or not artist:
-		send_text(person, 'No songs are currently queued.')
-	else:
-		send_text(person, 'Next up: ' + song + ' by ' + artist)
-	resp = jsonify({})
-	resp.status_code = 200
-	return resp	
 
 # we need the currently playing song
 def queue_song(person, query):
@@ -172,6 +97,96 @@ def charge_for_song(person, song_name):
 
 def skip():
 	frontend['juke'].trigger('skip')
+
+#########
+# VIEWS #
+#########
+
+# Asks for phone number input
+@app.route('/', methods=['GET'])
+def home():
+	return render_template('admin.html')
+
+# Shows the actual player
+@app.route('/player', methods=['GET'])
+def player():
+	return render_template('index.html')
+
+##############
+# API ROUTES #
+##############
+
+# stores the admin phone number; invoked from '/'
+@app.route('/admin_number', methods=['POST'])
+def admin_number():
+	print 'here'
+	number = request.form['number']
+	os.environ['TWILIO_ADMIN'] = number
+	return redirect(url_for('player'))
+
+# Venmo web-hook: user was confirmed to have paid for their song!
+@app.route('/pay', methods=['POST'])
+def pay():
+	data = json.loads(request.data)['data']
+	payment = data['id']
+	status = data['status']
+	if status == 'settled':
+		person = pending[payment]['person']
+		songkey = pending[payment]['songkey']
+		songname = pending[payment]['songname']
+		songartist = pending[payment]['songartist']
+		frontend['juke'].trigger('queue', {'song':songkey})
+		send_text(person, songname + ' by ' + songartist + ' is queued, thank you!')
+		del pending[payment] # payment is settled
+	elif status == 'cancelled':
+		del pending[payment]
+
+	return blank_resp()
+
+# parses all possible Twilio responses and delegates as necessary
+@app.route('/twilio', methods=['POST'])
+def twilio():
+	from_ = request.values.get('From', None)
+	msg = request.values.get('Body', None)
+	if msg.lower() == 'skip' and is_admin(from_):
+		skip()
+	elif msg.lower() == 'pause' and is_admin(from_):
+		frontend['juke'].trigger('pause')
+	elif msg.lower() == 'play' and is_admin(from_):
+		frontend['juke'].trigger('play')
+	# Web socket responds via '/current' API call
+	elif msg.lower() == 'current':
+		frontend['juke'].trigger('current', {'person':from_})
+	# Web socket responds via '/next' API call
+	elif msg.lower() == 'next':
+		frontend['juke'].trigger('next', {'person':from_})
+	else:
+		queue_song(from_, msg)
+
+	return blank_resp()
+
+# Front-end response to user request for next song
+@app.route('/current', methods=['POST'])
+def current():
+	person = request.values.get('person', None)
+	song = request.values.get('song', None)
+	artist = request.values.get('artist', None)
+	send_text(person, 'Now playing: ' + song + ' by ' + artist)
+	
+	return blank_resp()
+
+# Front-end response to user request for next song
+@app.route('/next', methods=['POST'])
+def next():
+	person = request.values.get('person', None)
+	song = request.values.get('song', None)
+	artist = request.values.get('artist', None)
+	if not song or not artist:
+		send_text(person, 'No songs are currently queued.')
+	else:
+		send_text(person, 'Next up: ' + song + ' by ' + artist)
+	
+	return blank_resp()
 
 ####################
 # USELESS OVERHEAD #
