@@ -34,6 +34,10 @@ def rdio(payload):
 	req = client.request('http://api.rdio.com/1/', 'POST', urllib.urlencode(payload))
 	return req
 
+def find_track(query):
+	song_result = rdio({'method':'search', 'query':query, 'types':'Track', 'count':1})
+	return json.loads(song_result[1])['result']['results'][0]
+
 # helper method to send an SMS via Twilio
 def send_text(to, body):
 	twilio.sms.messages.create(to=to, from_=os.environ['TWILIO_NUMBER'], body=body)
@@ -59,9 +63,7 @@ def queue_song(person, query):
 	stripped_query = query
 	if m:
 		stripped_query = query[:m.start()] + ' ' + query[m.end():]
-	print stripped_query
-	song_result = rdio({'method':'search', 'query':stripped_query, 'types':'Track', 'count':1})
-	song = json.loads(song_result[1])['result']['results'][0]
+	song = find_track(stripped_query)
 	if not is_admin(person):
 		payment = charge_for_song(person, song['name'])
 		if payment == -1: # Venmo account owner tried to queue a song as a non-admin. Edge case
@@ -160,6 +162,10 @@ def twilio():
 	# Web socket responds via '/next' API call
 	elif msg.lower() == 'next':
 		frontend['juke'].trigger('next', {'person':from_})
+	# Admin skip. CURRENTLY UNIMPLEMENTED ON FRONT-END
+	elif msg[0] == '*' and is_admin(from_):
+		song = find_track(msg[1:])
+		frontend['juke'].trigger('skip_to', {'song':song['key']}))
 	else:
 		queue_song(from_, msg)
 
