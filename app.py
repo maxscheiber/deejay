@@ -44,7 +44,7 @@ def send_text(to, body):
 
 def is_admin(person):
 	# RAP GENIUS DEMO ONLY, EVERYONE IS AN ADMIN, #YOLO
-	return true #return person[1:] == os.environ['TWILIO_ADMIN'][1:]
+	return True #return person[1:] == os.environ['TWILIO_ADMIN'][1:]
 
 # returns a blank response to an API call
 def blank_resp():
