@@ -43,8 +43,7 @@ def send_text(to, body):
 	twilio.sms.messages.create(to=to, from_=os.environ['TWILIO_NUMBER'], body=body)
 
 def is_admin(person):
-	# RAP GENIUS DEMO ONLY, EVERYONE IS AN ADMIN, #YOLO
-	return True #return person[1:] == os.environ['TWILIO_ADMIN'][1:]
+	return person[1:] == os.environ['TWILIO_ADMIN'][1:]
 
 # returns a blank response to an API call
 def blank_resp():
@@ -164,9 +163,9 @@ def twilio():
 	elif msg.lower() == 'next':
 		frontend['juke'].trigger('next', {'person':from_})
 	# Admin skip. CURRENTLY UNIMPLEMENTED ON FRONT-END
-	elif msg[0] == '*' and is_admin(from_):
-		song = find_track(msg[1:])
-		frontend['juke'].trigger('skip_to', {'song':song['key']}))
+	#elif msg[0] == '*' and is_admin(from_):
+	#	song = find_track(msg[1:])
+	#	frontend['juke'].trigger('skip_to', {'song':song['key']}))
 	else:
 		queue_song(from_, msg)
 
